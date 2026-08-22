@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scrawl — hand drawn annotations for HTML text</title>
 <meta name="description" content="A dependency free library that draws wobbly SVG strokes behind your text. Underlines, scribbles, circles, highlighter marks.">
+<link rel="canonical" href="https://platima.github.io/scrawl/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://platima.github.io/scrawl/">
+<meta property="og:title" content="Scrawl — hand drawn annotations for HTML text">
+<meta property="og:description" content="Wobbly SVG strokes behind your text. Ten shapes, no dependencies, 5.2 KB gzipped.">
+<meta property="og:image" content="https://platima.github.io/scrawl/screenshots/shapes.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- The wordmark's own underline, so the tab needs no extra request. -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M4 21 C10 17.5 15 24 21 19.5 S27 18 29 21' fill='none' stroke='%232a46b8' stroke-width='4' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -80,7 +89,6 @@
     letter-spacing: .06em;
     text-transform: uppercase;
     color: var(--ink-soft);
-    opacity: .75;
     padding-top: .55rem;
   }
 
@@ -170,7 +178,7 @@
   }
 
   /* A grid track's automatic minimum is min-content, so a wide child drags
-     the whole column past the viewport. This is what stops that. */
+     the whole column past the viewport. This stops that. */
   .lab > * { min-width: 0; }
 
   @media (max-width: 60rem) {
@@ -347,7 +355,7 @@
     <div class="mark">v0.1.0</div>
     <div class="wordmark">
       <h1>Scrawl</h1>
-      <span class="ver">4.5&nbsp;KB gzipped · no deps</span>
+      <span class="ver">5.2&nbsp;KB gzipped · no deps</span>
     </div>
 
     <p class="specimen-hero">
@@ -361,9 +369,11 @@
     </p>
 
     <p class="fine">
-      Built after digging through how Squarespace does its text highlights. Same idea,
-      standalone, MIT. There is also a
-      <a href="css-only.html">no JavaScript version</a> if you only need static strokes.
+      Every marketing site wants the pen-on-paper underline and every one of them
+      builds it again from scratch. This is that effect on its own, MIT, with no
+      site builder attached. There is also a
+      <a href="css-only.html">no JavaScript version</a> if you only need static
+      strokes, and the <a href="https://github.com/platima/scrawl">source is on GitHub</a>.
     </p>
   </header>
 
@@ -395,7 +405,7 @@
         <fieldset>
           <legend><h3>Thickness</h3></legend>
           <div class="slider">
-            <input type="range" id="thickness" min="1" max="9" step="0.5" value="3">
+            <input type="range" id="thickness" min="1" max="9" step="0.5" value="3" aria-label="Thickness in pixels">
             <output for="thickness" id="thicknessOut">3px</output>
           </div>
         </fieldset>
@@ -403,7 +413,7 @@
         <fieldset>
           <legend><h3>Passes</h3></legend>
           <div class="slider">
-            <input type="range" id="passes" min="1" max="4" step="1" value="2">
+            <input type="range" id="passes" min="1" max="4" step="1" value="2" aria-label="Passes">
             <output for="passes" id="passesOut">2</output>
           </div>
         </fieldset>
@@ -411,7 +421,7 @@
         <fieldset>
           <legend><h3>Jitter</h3></legend>
           <div class="slider">
-            <input type="range" id="jitter" min="0" max="2.5" step="0.1" value="1">
+            <input type="range" id="jitter" min="0" max="2.5" step="0.1" value="1" aria-label="Jitter">
             <output for="jitter" id="jitterOut">1</output>
           </div>
         </fieldset>
@@ -420,7 +430,7 @@
           <legend><h3>Draw on</h3></legend>
           <label class="toggle"><input type="checkbox" id="animate" checked> Animate the stroke</label>
           <div class="slider" style="margin-top:.55rem">
-            <input type="range" id="duration" min="150" max="2000" step="50" value="650">
+            <input type="range" id="duration" min="150" max="2000" step="50" value="650" aria-label="Draw duration in milliseconds">
             <output for="duration" id="durationOut">650ms</output>
           </div>
           <p class="notice" id="rmNotice" hidden>
@@ -459,7 +469,7 @@
   <section class="row" id="shapes-sheet">
     <div class="mark">all ten</div>
     <h2>The shape sheet</h2>
-    <p class="fine">Each one is drawn twice by default, which is what stops it reading as a vector graphic. Scroll them into view to see the reveal.</p>
+    <p class="fine">Each one is drawn twice by default, which stops it reading as a vector graphic. Scroll them into view to see the reveal.</p>
     <div class="sheet-grid" id="grid"></div>
   </section>
 
@@ -502,30 +512,37 @@
 }).show();</pre>
 
     <h3 style="margin-top:2.6rem">Options</h3>
+    <div class="table-scroll">
     <table>
       <thead><tr><th>Attribute</th><th>Default</th><th>What it does</th></tr></thead>
       <tbody>
         <tr><td>data-scrawl</td><td>underline</td><td>Shape name. One of the ten above.</td></tr>
         <tr><td>data-scrawl-color</td><td>inherited</td><td>Any CSS colour. Falls back to the element's own text colour.</td></tr>
-        <tr><td>data-scrawl-thickness</td><td>0.085em</td><td>Stroke width in px. Scales with font size if you leave it alone.</td></tr>
+        <tr><td>data-scrawl-thickness</td><td>font-size × 0.085, min 1.4px</td><td>Stroke width in px, written as a plain number. Scales with font size if you leave it alone.</td></tr>
         <tr><td>data-scrawl-passes</td><td>2</td><td>How many times the pen goes over the whole figure. 1 is clean, 3 is scratchy.</td></tr>
         <tr><td>data-scrawl-jitter</td><td>1</td><td>0 is ruler straight. Above 1.5 gets messy quickly.</td></tr>
         <tr><td>data-scrawl-opacity</td><td>1</td><td>Marker defaults to 0.32 so it does not bury the text.</td></tr>
-        <tr><td>data-scrawl-animate</td><td>true</td><td>Draw on reveal, triggered by IntersectionObserver.</td></tr>
+        <tr><td>data-scrawl-animate</td><td>true</td><td>Draw-on reveal, triggered by IntersectionObserver.</td></tr>
         <tr><td>data-scrawl-duration</td><td>650</td><td>Milliseconds per stroke.</td></tr>
         <tr><td>data-scrawl-delay</td><td>0</td><td>Milliseconds before the first stroke. Use it to sequence a paragraph.</td></tr>
+        <tr><td>data-scrawl-stagger</td><td>0.35</td><td>Gap between strokes, as a fraction of duration.</td></tr>
         <tr><td>data-scrawl-direction</td><td>right</td><td>Which end the pen starts from.</td></tr>
         <tr><td>data-scrawl-seed</td><td>the text</td><td>Change it to get a different wobble for the same words.</td></tr>
         <tr><td>data-scrawl-front</td><td>false</td><td>true paints over the glyphs instead of behind them.</td></tr>
         <tr><td>data-scrawl-repeat</td><td>false</td><td>Redraw every time it scrolls back into view.</td></tr>
+        <tr><td>data-scrawl-threshold</td><td>0.2</td><td>How much of the element has to be visible before it draws.</td></tr>
+        <tr><td>data-scrawl-respect-reduced-motion</td><td>true</td><td>false draws even when the OS asks for reduced motion.</td></tr>
       </tbody>
     </table>
+    </div>
 
     <h3 style="margin-top:2.6rem">Worth knowing</h3>
     <p class="fine">
       The SVG is appended to the annotated element's parent at <code>z-index: -1</code>, and the parent
-      gets <code>position: relative</code> if it was static. That keeps everything aligned through scrolling
-      and transforms without any coordinate maths. If the parent has its own background you will want
+      gets <code>position: relative</code> and <code>isolation: isolate</code> if it did not have them. That
+      keeps everything aligned through scrolling and scaled ancestors without any coordinate maths, and the
+      isolation stops the negative z-index escaping to the root stacking context. If the annotated element
+      itself has a background, or a later sibling paints over the stroke, you will want
       <code>data-scrawl-front="true"</code> instead. Redraws are debounced through a
       <code>ResizeObserver</code> on the parent plus <code>document.fonts.ready</code>, so a late web font
       does not leave strokes stranded under the old metrics.
@@ -534,7 +551,12 @@
 
   <footer class="row">
     <div class="mark">MIT</div>
-    <p>Scrawl. Do what you like with it.</p>
+    <p>
+      Scrawl, by <a href="https://github.com/platima">Platima</a>. Do what you like with it.
+      <a href="https://github.com/platima/scrawl">Source</a> ·
+      <a href="https://github.com/platima/scrawl/blob/main/LICENSE">Licence</a> ·
+      <a href="css-only.html">CSS-only build</a>
+    </p>
   </footer>
 
 </div>
@@ -581,8 +603,14 @@
   }
 
   function writeCode() {
-    var attrs = [['data-scrawl', state.type], ['data-scrawl-color', state.color]];
-    if (state.thickness !== 3) attrs.push(['data-scrawl-thickness', state.thickness]);
+    /* Thickness is always emitted. The playground works in fixed px while the
+       library default is font-relative, so leaving it out at the slider's
+       starting value would hand the reader markup that draws a thinner stroke
+       than the one they are looking at. The other sentinels below do match the
+       library defaults, so omitting those is honest. */
+    var attrs = [['data-scrawl', state.type],
+                 ['data-scrawl-color', state.color],
+                 ['data-scrawl-thickness', state.thickness]];
     if (state.passes !== 2) attrs.push(['data-scrawl-passes', state.passes]);
     if (state.jitter !== 1) attrs.push(['data-scrawl-jitter', state.jitter]);
     if (!state.animate) attrs.push(['data-scrawl-animate', 'false']);
@@ -631,6 +659,11 @@
       build(true);
     });
   });
+  /* Same reload-restore problem as the sliders. */
+  state.color = custom.value;
+  Array.prototype.forEach.call(swatchWrap.querySelectorAll('button'), function (c) {
+    c.setAttribute('aria-pressed', c.dataset.color === custom.value ? 'true' : 'false');
+  });
   custom.addEventListener('input', function () {
     state.color = custom.value;
     Array.prototype.forEach.call(swatchWrap.querySelectorAll('button'), function (c) {
@@ -643,6 +676,10 @@
   function slider(id, key, fmt) {
     var el = document.getElementById(id);
     var out = document.getElementById(id + 'Out');
+    /* Seed from the DOM, not from the literal above: Firefox restores form
+       values across a reload, and state would otherwise disagree with both the
+       readout and the stroke. */
+    state[key] = parseFloat(el.value);
     out.textContent = fmt(el.value);
     /* Repaint statically while dragging so it does not strobe, then replay
        the reveal once the handle is released. */
@@ -691,14 +728,29 @@
   document.getElementById('copy').addEventListener('click', function () {
     var btn = this;
     var text = plainCode();
-    var done = function () {
-      btn.textContent = 'Copied';
-      setTimeout(function () { btn.textContent = 'Copy'; }, 1400);
+    var say = function (msg, ms) {
+      btn.textContent = msg;
+      setTimeout(function () { btn.textContent = 'Copy'; }, ms || 1400);
+    };
+    /* navigator.clipboard needs a secure context, which the standalone build
+       opened over file:// does not have. execCommand still works there, and
+       the button only claims success when something was actually copied. */
+    var legacy = function () {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      say(ok ? 'Copied' : 'Select it manually', ok ? 1400 : 2000);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { btn.textContent = 'Select it manually'; });
+      navigator.clipboard.writeText(text).then(function () { say('Copied'); }, legacy);
     } else {
-      done();
+      legacy();
     }
   });
 
@@ -731,6 +783,9 @@
       PHRASES[name] + '</span></p>';
     grid.appendChild(card);
   });
+
+  state.animate = document.getElementById('animate').checked;
+  state.respectReducedMotion = !override.checked;
 
   /* everything with data-scrawl gets picked up here, including the cards
      we just built and the marked up prose in the hero */

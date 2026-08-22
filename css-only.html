@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scrawl CSS — hand drawn annotations with no JavaScript</title>
-<meta name="description" content="Masked background strokes that give you a hand drawn underline, scribble or highlighter with no script at all.">
+<meta name="description" content="SVG background strokes that give you a hand drawn underline, scribble or highlighter with no script at all.">
+<link rel="canonical" href="https://platima.github.io/scrawl/css-only.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://platima.github.io/scrawl/css-only.html">
+<meta property="og:title" content="Scrawl CSS — hand drawn annotations with no JavaScript">
+<meta property="og:description" content="SVG background strokes that survive line wrapping with no measuring. One stylesheet, 2.7 KB gzipped.">
+<meta property="og:image" content="https://platima.github.io/scrawl/screenshots/shapes.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M4 21 C10 17.5 15 24 21 19.5 S27 18 29 21' fill='none' stroke='%232a46b8' stroke-width='4' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -35,7 +43,7 @@
   .mark {
     position: absolute; left: 0; width: calc(var(--gutter) - 2.6rem); text-align: right;
     font-family: var(--mono); font-size: .69rem; letter-spacing: .06em; text-transform: uppercase;
-    color: var(--ink-soft); opacity: .75; padding-top: .55rem;
+    color: var(--ink-soft); padding-top: .55rem;
   }
   h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(2.8rem, 9vw, 4.6rem);
        line-height: .95; letter-spacing: -.03em; margin: 0 0 1.2rem; }
@@ -81,8 +89,8 @@
       because the stroke is a <span class="scrawl scrawl--marker scrawl--yellow">background, not an overlay</span>.
     </p>
     <p class="fine">
-      Trade off: every instance of a shape looks the same, and there is no draw on animation.
-      If you want per element wobble or the pen stroke reveal, use
+      Trade-off: every instance of a shape looks the same, and there is no draw-on animation.
+      If you want per-element wobble or the pen stroke reveal, use
       <a href="index.html">the JS build</a> instead.
     </p>
   </header>
@@ -93,7 +101,9 @@
     <div class="mark">how</div>
     <h2>How it works</h2>
     <p>
-      The stroke is an SVG <code>background-image</code> sized to a band under the baseline. Backgrounds
+      The stroke is an SVG <code>background-image</code>: a band under the baseline for
+      <code>underline</code>, <code>double</code>, <code>scribble</code> and <code>curve</code>, through the
+      middle for <code>strike</code>, and behind the whole line for <code>marker</code>. Backgrounds
       already repaint per line box, so wrapped text is handled with no measuring, no resize listeners and
       no layout reads. Pick a shape class, then an ink class.
     </p>
@@ -133,18 +143,21 @@
     <code>.scrawl--yellow</code>, <code>.scrawl--green</code>, <code>.scrawl--lead</code> and
     <code>.scrawl--paper</code> for dark backgrounds. Leave the ink class off for near black. Colour has to
     be baked into the SVG because a data URI cannot read a custom property, which is the one real
-    limitation here. Adding your own is a copy, paste and swap two hex values.</p>
+    limitation here. Adding your own means copying a rule and swapping its hex colour.</p>
     <table>
       <thead><tr><th>Property</th><th>Default</th><th>What it does</th></tr></thead>
       <tbody>
         <tr><td>--scrawl-height</td><td>0.34em</td><td>How tall the stroke band is.</td></tr>
         <tr><td>--scrawl-tile</td><td>5.5em</td><td>How often the wobble repeats. Smaller means busier.</td></tr>
-        <tr><td>--scrawl-drop</td><td>0em</td><td>Nudge the stroke further below the baseline.</td></tr>
+        <tr><td>--scrawl-drop</td><td>0em</td><td>Lifts the stroke towards the baseline. Go negative to push it lower.</td></tr>
       </tbody>
     </table>
     <p class="fine" style="margin-top:1.6rem">
       Shorthand classes for the common tweaks: <code>.scrawl--thin</code>, <code>.scrawl--thick</code>,
-      <code>.scrawl--tight</code>, <code>.scrawl--loose</code>, <code>.scrawl--low</code>.
+      <code>.scrawl--tight</code>, <code>.scrawl--loose</code>, <code>.scrawl--low</code>. Each only
+      reaches a shape that reads the variable behind it, so <code>marker</code> ignores height and drop,
+      <code>curve</code> ignores tile, and <code>box</code> ignores all three because it draws with
+      <code>border-image</code> rather than a background.
     </p>
   </section>
 
@@ -159,14 +172,19 @@
       with no measuring, and it keeps working when the reader bumps their font size up.
     </p>
     <p class="fine">
-      <code>box-decoration-break: clone</code> is what makes each line fragment get its own copy rather than
+      <code>box-decoration-break: clone</code> makes each line fragment take its own copy rather than
       one background stretched across the lot.
     </p>
   </section>
 
   <footer class="row">
     <div class="mark">MIT</div>
-    <p>Scrawl CSS. Do what you like with it.</p>
+    <p>
+      Scrawl CSS, by <a href="https://github.com/platima">Platima</a>. Do what you like with it.
+      <a href="https://github.com/platima/scrawl">Source</a> ·
+      <a href="https://github.com/platima/scrawl/blob/main/LICENSE">Licence</a> ·
+      <a href="index.html">JS build</a>
+    </p>
   </footer>
 
 </div>

@@ -74,9 +74,9 @@
 
   function n2(v) { return Math.round(v * 100) / 100; }
 
-  /* Catmull-Rom through the points, emitted as cubic beziers. This is what
-     turns a jittered point cloud into something that looks drawn rather
-     than plotted. */
+  /* Catmull-Rom through the points, emitted as cubic beziers. This turns a
+     jittered point cloud into something that looks drawn rather than
+     plotted. */
   function smooth(pts) {
     if (pts.length < 2) return '';
     var d = 'M' + n2(pts[0][0]) + ' ' + n2(pts[0][1]);
@@ -94,12 +94,12 @@
 
   function jit(rnd, amt) { return (rnd() - 0.5) * amt; }
 
-/* Passes are the pen going over the same mark again. Each repeat is a little
-   thinner and lighter than the last, which is what reads as retracing rather
-   than as one fat stroke. */
-function passCount(o) { return Math.max(1, Math.round(o.passes) || 1); }
-function passWeight(p) { return p === 0 ? 1 : Math.max(0.55, 1 - p * 0.18); }
-function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
+  /* Passes are the pen going over the same mark again. Each repeat is a
+     little thinner and lighter than the last, which reads as retracing
+     rather than as one fat stroke. */
+  function passCount(o) { return Math.max(1, Math.round(o.passes) || 1); }
+  function passWeight(p) { return p === 0 ? 1 : Math.max(0.55, 1 - p * 0.18); }
+  function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
 
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
 
@@ -340,7 +340,11 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     this.svg = null;
     this.strokes = [];
     this.shown = false;
+    this._hidden = false;
     this._revealed = false;
+    this._host = null;
+    this._hostPos = '';
+    this._hostIso = '';
     this._io = null;
     this._ro = null;
     this._anims = null;
@@ -364,6 +368,11 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     var fontSize = parseFloat(cs.fontSize) || 16;
     var o = {};
     for (var k in this.opts) { if (hasOwn(this.opts, k)) o[k] = this.opts[k]; }
+    /* Normalise an unknown shape here rather than at the generator lookup.
+       PER_LINE and DEFAULT_OPACITY are keyed on the same string, so a typo
+       used to fall back to underline's geometry but not to its per line
+       layout, and wrapped text got one stroke under the whole run. */
+    if (!GENERATORS[o.type]) o.type = 'underline';
     o.thickness = o.thickness != null ? o.thickness : Math.max(1.4, fontSize * 0.085);
     o.color = o.color || cs.color || '#000';
     o.jitter = o.jitter == null ? 1 : o.jitter;
@@ -375,7 +384,7 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     this.destroySvg();
     var el = this.el;
     var parent = el.parentNode;
-    if (!parent || !el.getClientRects) return this;
+    if (!parent || !parent.getBoundingClientRect || !el.getClientRects) return this;
 
     var rects = el.getClientRects();
     if (!rects.length) return this;
@@ -383,6 +392,14 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     var o = this._resolve();
     var pRect = parent.getBoundingClientRect();
     var pcs = window.getComputedStyle(parent);
+    /* Remember what the parent looked like before we touched it, so remove()
+       can put it back. Guarded on identity so a redraw does not save our own
+       values over the originals. */
+    if (this._host !== parent) {
+      this._host = parent;
+      this._hostPos = parent.style.position;
+      this._hostIso = parent.style.isolation;
+    }
     if (pcs.position === 'static') parent.style.position = 'relative';
     /* The stroke sits at z-index -1 so the glyphs stay on top. Without a
        stacking context on the parent, that -1 escapes all the way to the
@@ -391,16 +408,31 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     var bl = parseFloat(pcs.borderLeftWidth) || 0;
     var bt = parseFloat(pcs.borderTopWidth) || 0;
 
+    /* getClientRects and getBoundingClientRect both report post transform
+       viewport pixels, but the left/top we write below are read back in the
+       parent's own untransformed space and then scaled again. Divide any
+       ancestor scale out first. The deadband keeps offsetWidth's integer
+       rounding from adding drift in the ordinary unscaled case. */
+    var sx = 1, sy = 1, ratio;
+    if (parent.offsetWidth > 0 && pRect.width > 0) {
+      ratio = pRect.width / parent.offsetWidth;
+      if (Math.abs(ratio - 1) > 0.005) sx = ratio;
+    }
+    if (parent.offsetHeight > 0 && pRect.height > 0) {
+      ratio = pRect.height / parent.offsetHeight;
+      if (Math.abs(ratio - 1) > 0.005) sy = ratio;
+    }
+
     var boxes = [];
     var i;
     for (i = 0; i < rects.length; i++) {
       var r = rects[i];
       if (r.width < 0.5) continue;
       boxes.push({
-        x: r.left - pRect.left - bl + parent.scrollLeft,
-        y: r.top - pRect.top - bt + parent.scrollTop,
-        w: r.width,
-        h: r.height
+        x: (r.left - pRect.left) / sx - bl + parent.scrollLeft,
+        y: (r.top - pRect.top) / sy - bt + parent.scrollTop,
+        w: r.width / sx,
+        h: r.height / sy
       });
     }
     if (!boxes.length) return this;
@@ -463,13 +495,19 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     this._resolved = o;
 
     if (this.shown) this._paint(false);
-    else this._hideStrokes();
+    else this._hideStrokes(this._hidden);
     return this;
   };
 
-  Annotation.prototype._hideStrokes = function () {
+  Annotation.prototype._hideStrokes = function (force) {
     var o = this._resolved || this.opts;
-    if (!o.animate || this._muted(o)) return;
+    if (!o.animate || this._muted(o)) {
+      /* Nothing to arm, so the only way to take the strokes back off the page
+         is to hide the SVG. Only when hide() asked: a first render with
+         animate off is still meant to paint. */
+      if (force && this.svg) this.svg.style.visibility = 'hidden';
+      return;
+    }
     for (var i = 0; i < this.strokes.length; i++) {
       var len = safeLength(this.strokes[i]);
       var st = this.strokes[i].style;
@@ -486,6 +524,13 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
 
     this._stopAnims();
     if (this._revealTimer) { clearTimeout(this._revealTimer); this._revealTimer = null; }
+    /* render() bails without an SVG for an element with no line boxes, a
+       display:none ancestor or no parent. Painting one anyway used to throw
+       out of init() and take every later annotation on the page with it. */
+    if (!this.svg || !this.strokes.length) return;
+
+    this._hidden = false;
+    this.svg.style.visibility = '';
 
     if (!doAnim) {
       for (i = 0; i < this.strokes.length; i++) {
@@ -557,16 +602,25 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
 
   Annotation.prototype.hide = function () {
     this.shown = false;
-    this._hideStrokes();
+    this._hidden = true;
+    /* A running WAAPI animation outranks the style attribute, so without
+       cancelling it first the stroke carries on drawing itself in and then
+       snaps away when the fill ends. */
+    this._stopAnims();
+    if (this._revealTimer) { clearTimeout(this._revealTimer); this._revealTimer = null; }
+    this._revealed = false;
+    this._hideStrokes(true);
     return this;
   };
 
   Annotation.prototype.refresh = function () {
     var wasShown = this.shown;
+    /* render() paints statically on the way through and sets this flag, so
+       read it first. A refresh that lands mid reveal (a late web font, a
+       resize) replays the animation rather than snapping it to the end. */
+    var wasRevealed = this._revealed;
     this.render();
-    /* A refresh that lands mid reveal (a late web font, a resize) used to
-       repaint statically and swallow the animation. Replay it instead. */
-    if (wasShown) this._paint(!this._revealed);
+    if (wasShown) this._paint(!wasRevealed);
     return this;
   };
 
@@ -583,6 +637,20 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     if (this._revealTimer) { clearTimeout(this._revealTimer); this._revealTimer = null; }
     var idx = registry.indexOf(this);
     if (idx > -1) registry.splice(idx, 1);
+    if (this.el && this.el.__scrawl === this) this.el.__scrawl = null;
+    /* Only the last instance on a given parent restores it, or two
+       annotations in the same paragraph would undo each other. */
+    if (this._host) {
+      var shared = false;
+      for (var j = 0; j < registry.length; j++) {
+        if (registry[j]._host === this._host) { shared = true; break; }
+      }
+      if (!shared) {
+        this._host.style.position = this._hostPos;
+        this._host.style.isolation = this._hostIso;
+      }
+      this._host = null;
+    }
     this.destroySvg();
     return this;
   };
@@ -590,6 +658,12 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
   Annotation.prototype.observe = function () {
     var self = this;
     if (!('IntersectionObserver' in window)) { this.show(true); return this; }
+    if (this._io) { this._io.disconnect(); this._io = null; }
+    /* The constructor throws on a non-finite or out of range threshold, and
+       that throw would escape init() and leave every later element blank. */
+    var th = this.opts.threshold;
+    if (typeof th !== 'number' || !isFinite(th)) th = DEFAULTS.threshold;
+    th = clamp(th, 0, 1);
     this._io = new IntersectionObserver(function (entries) {
       for (var i = 0; i < entries.length; i++) {
         if (entries[i].isIntersecting) {
@@ -599,7 +673,7 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
           self.hide();
         }
       }
-    }, { threshold: this.opts.threshold });
+    }, { threshold: th });
     this._io.observe(this.el);
     return this;
   };
@@ -629,6 +703,16 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
+  /* Values that would throw or draw nothing at the far end. WAAPI rejects a
+     negative duration, IntersectionObserver rejects a threshold outside 0..1. */
+  function clampOption(name, v) {
+    if (name === 'threshold') return clamp(v, 0, 1);
+    if (name === 'duration' || name === 'delay' || name === 'stagger') return Math.max(0, v);
+    if (name === 'opacity') return clamp(v, 0, 1);
+    if (name === 'thickness' || name === 'jitter' || name === 'passes') return Math.max(0, v);
+    return v;
+  }
+
   var NUMERIC = { thickness: 1, opacity: 1, passes: 1, jitter: 1, duration: 1, delay: 1, stagger: 1, threshold: 1 };
   var BOOLEAN = { animate: 1, front: 1, repeat: 1, respectReducedMotion: 1 };
 
@@ -641,8 +725,18 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
       if (key.indexOf('scrawl') !== 0) continue;
       var name = key.charAt(6).toLowerCase() + key.slice(7);
       var raw = d[key];
-      if (NUMERIC[name]) o[name] = parseFloat(raw);
-      else if (BOOLEAN[name]) o[name] = !(raw === 'false' || raw === '0');
+      if (NUMERIC[name]) {
+        /* A mistyped number used to sail through as NaN: every guard below
+           tests != null, so it reached the generators and produced a path of
+           "MNaN NaN", or reached element.animate and threw. Drop the key
+           instead and let the default merge cover it. */
+        var num = parseFloat(raw);
+        if (isFinite(num)) o[name] = clampOption(name, num);
+      } else if (BOOLEAN[name]) o[name] = !(raw === 'false' || raw === '0');
+      /* A numeric looking seed has to become a number, because a number
+         supplied from JS is used raw while a string is hashed. Same value in
+         an attribute and in an options object, same wobble. */
+      else if (name === 'seed' && /^-?\d+(?:\.\d+)?$/.test(raw)) o[name] = parseFloat(raw);
       else o[name] = raw;
     }
     return o;
@@ -660,6 +754,12 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     });
   }
 
+  /* Strokes are revealed on scroll, so anything below the fold would print
+     blank. Paint the lot before the page goes to paper. */
+  function revealAll() {
+    for (var i = 0; i < registry.length; i++) registry[i].show(false);
+  }
+
   /* ------------------------------------------------------------------- API */
 
   function annotate(el, opts) {
@@ -674,6 +774,7 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
 
     var inst = new Annotation(el, merged);
     registry.push(inst);
+    el.__scrawl = inst;
     inst.render();
 
     if ('ResizeObserver' in window && el.parentNode) {
@@ -703,8 +804,9 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
       if (nodes[i].__scrawl) continue;
       var inst = annotate(nodes[i]);
       if (!inst) continue;
-      nodes[i].__scrawl = inst;
-      inst.observe();
+      /* One bad element must not cost the rest of the page its strokes. */
+      try { inst.observe(); }
+      catch (e) { inst.show(true); }
       made.push(inst);
     }
     return made;
@@ -719,11 +821,20 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
     refresh: refreshAll,
     instances: registry,
     generators: GENERATORS, // add your own: Scrawl.generators.myShape = fn
+    perLine: PER_LINE,      // Scrawl.perLine.myShape = 1 for one stroke per line box
     rng: makeRng
   };
 
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', refreshAll);
+    window.addEventListener('beforeprint', revealAll);
+    /* Safari has never fired beforeprint. */
+    if (window.matchMedia) {
+      var printQuery = window.matchMedia('print');
+      if (printQuery.addEventListener) {
+        printQuery.addEventListener('change', function (e) { if (e.matches) revealAll(); });
+      }
+    }
     if (document.fonts) {
       if (document.fonts.ready) document.fonts.ready.then(refreshAll).catch(function () {});
       /* ready is a one shot: it settles as soon as the fonts needed at that

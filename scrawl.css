@@ -10,14 +10,14 @@
  *
  * Ink has to be baked into the SVG because a data URI cannot read a CSS
  * variable, hence the ink classes. To add your own, see the note at the
- * bottom of this file. If you want per element wobble, a draw on animation
+ * bottom of this file. If you want per-element wobble, a draw-on animation
  * or arbitrary runtime colours, use scrawl.js instead.
  */
 
 .scrawl {
   --scrawl-tile: 5.5em;    /* how often the wobble repeats */
   --scrawl-height: 0.34em; /* how tall the stroke band is */
-  --scrawl-drop: 0em;      /* nudge the stroke further below the baseline */
+  --scrawl-drop: 0em;      /* lifts the stroke towards the baseline; go negative to push it lower */
 
   background-repeat: repeat-x;
   background-size: var(--scrawl-tile) var(--scrawl-height);
@@ -50,17 +50,22 @@
 /* Struck through the middle rather than underlined. */
 .scrawl--strike {
   padding-bottom: 0;
-  background-position: 0 54%;
+  /* Reads --scrawl-drop like the base rule does, or .scrawl--low would be a
+     no-op here. At the 0em default this computes to a plain 54%. */
+  background-position: 0 calc(54% - var(--scrawl-drop));
 }
 
-/* One long sweep that stretches to fit rather than tiling, so keep it on runs that will not wrap. */
+/* One long sweep that stretches to fit rather than tiling, so keep it on runs
+   that will not wrap. Stretching is also why --scrawl-tile does nothing here. */
 .scrawl--curve {
   --scrawl-height: 0.5em;
   background-repeat: no-repeat;
   background-size: 100% var(--scrawl-height);
 }
 
-/* Highlighter, baked at 42% opacity so it does not bury the text. */
+/* Highlighter, baked at 42% opacity so it does not bury the text. The band is
+   the full height of the line box, so --scrawl-height and --scrawl-drop do not
+   apply. */
 .scrawl--marker {
   --scrawl-tile: 7em;
   padding: 0.08em 0.26em;
@@ -69,7 +74,8 @@
   background-position: 0 0;
 }
 
-/* Uses border-image, so the corners hold their shape while the edges stretch. */
+/* Uses border-image, so the corners hold their shape while the edges stretch.
+   Nothing here is a background, so none of the three variables reach it. */
 .scrawl--box {
   background: none;
   padding: 0.2em 0.45em;
@@ -147,11 +153,17 @@
 .scrawl--loose { --scrawl-tile: 9em; }
 .scrawl--low   { --scrawl-drop: -0.08em; }
 
+/* These only reach a shape that reads the variable behind them, so not every
+   pairing does something: thin and thick are inert on marker and box, tight
+   and loose are inert on curve and box, and box ignores all three. */
+
 /* --------------------------------------------------------- your own ink */
 /*
-   Copy any rule from the ink block above and swap the two hex values, one in
-   the stroke attribute and, for the marker, one in fill. Remember that # is
-   written %23 inside a data URI:
+   Copy any rule from the ink block above and swap its hex colour. Most shapes
+   carry one, in the stroke attribute. The marker has no stroke, so swap its
+   fill instead. The double rules carry two strokes, one per line, so change
+   both or you will get a two-tone rule. Remember that # is written %23 inside
+   a data URI:
 
      .scrawl--underline.scrawl--hot {
        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%23ff5722' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
