@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scrawl CSS — hand drawn annotations with no JavaScript</title>
+<meta name="description" content="Masked background strokes that give you a hand drawn underline, scribble or highlighter with no script at all.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="scrawl.css">
+<style>
+  :root {
+    --paper: #e4e3db; --paper-deep: #d7d5ca; --ink: #15171b;
+    --ink-soft: #5c6167; --rule: #c4c0b3; --margin-red: #c4553f;
+    --serif: "Newsreader", Georgia, serif;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    --gutter: 8.5rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.65;
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px,
+      rgba(94,99,106,.07) 31px, rgba(94,99,106,.07) 32px);
+  }
+  .sheet { max-width: 62rem; margin: 0 auto; padding: 0 1.5rem 7rem; position: relative; }
+  .sheet::before {
+    content: ""; position: absolute; top: 0; bottom: 0;
+    left: calc(1.5rem + var(--gutter) - 1.6rem);
+    width: 1px; background: var(--margin-red); opacity: .5;
+  }
+  .row { padding-left: var(--gutter); position: relative; }
+  .mark {
+    position: absolute; left: 0; width: calc(var(--gutter) - 2.6rem); text-align: right;
+    font-family: var(--mono); font-size: .69rem; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-soft); opacity: .75; padding-top: .55rem;
+  }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(2.8rem, 9vw, 4.6rem);
+       line-height: .95; letter-spacing: -.03em; margin: 0 0 1.2rem; }
+  h2 { font-family: var(--serif); font-weight: 500; font-size: clamp(1.5rem, 3.4vw, 2rem);
+       letter-spacing: -.02em; margin: 0 0 1.2rem; }
+  h3 { font-family: var(--mono); font-weight: 500; font-size: .74rem; letter-spacing: .09em;
+       text-transform: uppercase; color: var(--ink-soft); margin: 0 0 .5rem; }
+  p { margin: 0 0 1.15rem; max-width: 44rem; }
+  a { color: inherit; text-underline-offset: .18em; }
+  code { font-family: var(--mono); font-size: .88em; }
+  section { padding-top: 4rem; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 4rem 0 0; }
+  header { padding-top: 5rem; }
+  .fine { font-size: .88rem; color: var(--ink-soft); max-width: 38rem; }
+  .demo { font-family: var(--serif); font-size: clamp(1.2rem, 2.7vw, 1.55rem); line-height: 2.15; max-width: 38rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 2.4rem 2rem; }
+  .card p { font-family: var(--serif); font-size: 1.3rem; line-height: 2.15; margin: .3rem 0 0; }
+  pre { font-family: var(--mono); font-size: .76rem; line-height: 1.7; background: var(--ink);
+        color: #dfe0dc; padding: 1.1rem 1.25rem; border-radius: 3px; overflow-x: auto; margin: 1rem 0 0; }
+  table { border-collapse: collapse; width: 100%; max-width: 46rem; font-size: .87rem; }
+  th, td { text-align: left; padding: .5rem .8rem .5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase;
+       color: var(--ink-soft); font-weight: 500; }
+  td:first-child { font-family: var(--mono); font-size: .8rem; white-space: nowrap; }
+  footer { padding-top: 4.5rem; font-size: .85rem; color: var(--ink-soft); }
+  :focus-visible { outline: 2px solid var(--margin-red); outline-offset: 2px; }
+  @media (max-width: 60rem) {
+    :root { --gutter: 0rem; }
+    .sheet::before { display: none; }
+    .mark { position: static; width: auto; text-align: left; padding: 0 0 .5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="row">
+    <div class="mark">no js</div>
+    <h1>Scrawl CSS</h1>
+    <p class="demo">
+      One stylesheet, <span class="scrawl scrawl--underline scrawl--blue">no script</span>,
+      and it still <span class="scrawl scrawl--scribble scrawl--red">survives line wrapping</span>
+      because the stroke is a <span class="scrawl scrawl--marker scrawl--yellow">background, not an overlay</span>.
+    </p>
+    <p class="fine">
+      Trade off: every instance of a shape looks the same, and there is no draw on animation.
+      If you want per element wobble or the pen stroke reveal, use
+      <a href="index.html">the JS build</a> instead.
+    </p>
+  </header>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">how</div>
+    <h2>How it works</h2>
+    <p>
+      The stroke is an SVG <code>background-image</code> sized to a band under the baseline. Backgrounds
+      already repaint per line box, so wrapped text is handled with no measuring, no resize listeners and
+      no layout reads. Pick a shape class, then an ink class.
+    </p>
+<pre>&lt;link rel="stylesheet" href="scrawl.css"&gt;
+
+&lt;span class="scrawl scrawl--scribble scrawl--red"&gt;
+  like this
+&lt;/span&gt;</pre>
+  </section>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">shapes</div>
+    <h2>What you get</h2>
+    <div class="grid">
+      <div class="card"><h3>underline</h3><p><span class="scrawl scrawl--underline scrawl--blue">read this bit twice</span></p></div>
+      <div class="card"><h3>double</h3><p><span class="scrawl scrawl--double scrawl--red">set this in italics</span></p></div>
+      <div class="card"><h3>scribble</h3><p><span class="scrawl scrawl--scribble scrawl--lead">not quite sure yet</span></p></div>
+      <div class="card"><h3>curve</h3><p><span class="scrawl scrawl--curve scrawl--green">one confident sweep</span></p></div>
+      <div class="card"><h3>strike</h3><p><span class="scrawl scrawl--strike scrawl--red">cut on second pass</span></p></div>
+      <div class="card"><h3>marker</h3><p><span class="scrawl scrawl--marker scrawl--yellow">the important sentence</span></p></div>
+      <div class="card"><h3>box</h3><p><span class="scrawl scrawl--box scrawl--red">check these figures</span></p></div>
+    </div>
+    <p class="fine" style="margin-top:2rem">
+      <code>box</code> uses <code>border-image</code> rather than a background, so its corners hold their
+      shape while the edges stretch instead of tiling.
+    </p>
+  </section>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">tuning</div>
+    <h2>Inks and variables</h2>
+    <p>Six ink classes ship with it: <code>.scrawl--blue</code>, <code>.scrawl--red</code>,
+    <code>.scrawl--yellow</code>, <code>.scrawl--green</code>, <code>.scrawl--lead</code> and
+    <code>.scrawl--paper</code> for dark backgrounds. Leave the ink class off for near black. Colour has to
+    be baked into the SVG because a data URI cannot read a custom property, which is the one real
+    limitation here. Adding your own is a copy, paste and swap two hex values.</p>
+    <table>
+      <thead><tr><th>Property</th><th>Default</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>--scrawl-height</td><td>0.34em</td><td>How tall the stroke band is.</td></tr>
+        <tr><td>--scrawl-tile</td><td>5.5em</td><td>How often the wobble repeats. Smaller means busier.</td></tr>
+        <tr><td>--scrawl-drop</td><td>0em</td><td>Nudge the stroke further below the baseline.</td></tr>
+      </tbody>
+    </table>
+    <p class="fine" style="margin-top:1.6rem">
+      Shorthand classes for the common tweaks: <code>.scrawl--thin</code>, <code>.scrawl--thick</code>,
+      <code>.scrawl--tight</code>, <code>.scrawl--loose</code>, <code>.scrawl--low</code>.
+    </p>
+  </section>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">wrapping</div>
+    <h2>Long runs</h2>
+    <p class="demo">
+      The whole point of doing this with a background is that
+      <span class="scrawl scrawl--underline scrawl--blue">a run of text that spills across three or four lines still gets a stroke on every one of them</span>,
+      with no measuring, and it keeps working when the reader bumps their font size up.
+    </p>
+    <p class="fine">
+      <code>box-decoration-break: clone</code> is what makes each line fragment get its own copy rather than
+      one background stretched across the lot.
+    </p>
+  </section>
+
+  <footer class="row">
+    <div class="mark">MIT</div>
+    <p>Scrawl CSS. Do what you like with it.</p>
+  </footer>
+
+</div>
+</body>
+</html>

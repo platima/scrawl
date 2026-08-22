@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scrawl — hand drawn annotations for HTML text</title>
+<meta name="description" content="A dependency free library that draws wobbly SVG strokes behind your text. Underlines, scribbles, circles, highlighter marks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:      #e4e3db;
+    --paper-deep: #d7d5ca;
+    --ink:        #15171b;
+    --ink-soft:   #5c6167;
+    --rule:       #c4c0b3;
+    --margin-red: #c4553f;
+
+    --pen-biro:   #2a46b8;
+    --pen-red:    #d2372a;
+    --pen-yellow: #efc627;
+    --pen-lead:   #4a4e54;
+    --pen-green:  #1f8a5b;
+
+    --serif: "Newsreader", Georgia, serif;
+    --sans:  "IBM Plex Sans", system-ui, sans-serif;
+    --mono:  "IBM Plex Mono", ui-monospace, monospace;
+
+    --gutter: 8.5rem;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    /* Faint horizontal rules, like a pad you would actually write on. */
+    background-image: repeating-linear-gradient(
+      to bottom, transparent 0, transparent 31px,
+      rgba(94, 99, 106, .07) 31px, rgba(94, 99, 106, .07) 32px);
+  }
+
+  /* ---- the page: a margin rule with marks to its left, prose to its right */
+
+  .sheet {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 7rem;
+    position: relative;
+  }
+
+  .sheet::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc(1.5rem + var(--gutter) - 1.6rem);
+    width: 1px;
+    background: var(--margin-red);
+    opacity: .5;
+  }
+
+  .row { padding-left: var(--gutter); position: relative; }
+
+  /* Margin marks. These are labels a sub-editor would pencil in the gutter,
+     so they sit left of the rule and stay quiet. */
+  .mark {
+    position: absolute;
+    left: 0;
+    width: calc(var(--gutter) - 2.6rem);
+    text-align: right;
+    font-family: var(--mono);
+    font-size: .69rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: .75;
+    padding-top: .55rem;
+  }
+
+  /* ---- type */
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(3.4rem, 11vw, 6.5rem);
+    line-height: .92;
+    letter-spacing: -.035em;
+    margin: 0;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3.6vw, 2.15rem);
+    letter-spacing: -.02em;
+    line-height: 1.15;
+    margin: 0 0 1.4rem;
+  }
+
+  h3 {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: .78rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 .6rem;
+  }
+
+  p { margin: 0 0 1.15rem; max-width: 44rem; }
+
+  a { color: inherit; text-underline-offset: .18em; text-decoration-thickness: 1px; }
+
+  code, kbd { font-family: var(--mono); font-size: .88em; }
+
+  .lede {
+    font-family: var(--serif);
+    font-size: clamp(1.2rem, 2.7vw, 1.5rem);
+    line-height: 1.55;
+    max-width: 38rem;
+  }
+
+  .fine { font-size: .88rem; color: var(--ink-soft); max-width: 38rem; }
+
+  section { padding-top: 4.5rem; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 4.5rem 0 0;
+  }
+
+  /* ---- hero */
+
+  header { padding-top: 5rem; }
+
+  .wordmark { display: flex; align-items: baseline; gap: 1.1rem; flex-wrap: wrap; }
+
+  .ver {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+    padding: .1rem .45rem;
+    border-radius: 2px;
+  }
+
+  .specimen-hero {
+    font-family: var(--serif);
+    font-size: clamp(1.25rem, 3vw, 1.7rem);
+    line-height: 1.85;
+    max-width: 40rem;
+    margin: 2.6rem 0 2rem;
+  }
+
+  /* ---- playground */
+
+  .lab {
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  /* A grid track's automatic minimum is min-content, so a wide child drags
+     the whole column past the viewport. This is what stops that. */
+  .lab > * { min-width: 0; }
+
+  @media (max-width: 60rem) {
+    :root { --gutter: 0rem; }
+    .sheet::before { display: none; }
+    .mark { position: static; width: auto; text-align: left; padding: 0 0 .5rem; }
+    .lab { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  }
+
+  fieldset { border: 0; margin: 0 0 1.4rem; padding: 0; }
+  legend { padding: 0; }
+
+  .shapes { display: flex; flex-wrap: wrap; gap: .3rem; }
+
+  .shapes button {
+    font-family: var(--mono);
+    font-size: .74rem;
+    padding: .3rem .55rem;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .shapes button:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .shapes button[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .swatches { display: flex; gap: .45rem; align-items: center; }
+
+  .swatches button {
+    width: 1.55rem; height: 1.55rem;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,.18);
+    cursor: pointer;
+    padding: 0;
+    transition: transform .12s;
+  }
+  .swatches button:hover { transform: scale(1.12); }
+  .swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ink); }
+
+  input[type="color"] {
+    width: 1.55rem; height: 1.55rem; padding: 0;
+    border: 1px solid var(--rule); border-radius: 50%;
+    background: none; cursor: pointer;
+  }
+
+  .slider { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; align-items: center; }
+  .slider output { font-family: var(--mono); font-size: .74rem; color: var(--ink-soft); }
+
+  input[type="range"] { width: 100%; min-width: 0; accent-color: var(--ink); }
+
+  .toggle { display: flex; align-items: center; gap: .5rem; font-size: .88rem; }
+  .toggle input { accent-color: var(--ink); }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .04em;
+    padding: .4rem .7rem;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--ink); }
+
+  .stage {
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 2.75rem 2.25rem;
+    min-height: 12rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .specimen {
+    font-family: var(--serif);
+    font-size: clamp(1.15rem, 2.6vw, 1.55rem);
+    line-height: 1.95;
+    margin: 0;
+  }
+
+  pre {
+    font-family: var(--mono);
+    overflow-wrap: anywhere;
+    font-size: .76rem;
+    line-height: 1.7;
+    background: var(--ink);
+    color: #dfe0dc;
+    padding: 1.1rem 1.25rem;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin: 1rem 0 0;
+    tab-size: 2;
+  }
+  pre .tag { color: #8fb2ff; }
+  pre .attr { color: #e5c07b; }
+  pre .val { color: #a8d8a0; }
+
+  .codehead { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.6rem; }
+
+  /* ---- shape sheet */
+
+  .sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: 2.6rem 2rem;
+  }
+
+  .swatch-card p {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    line-height: 2.1;
+    margin: .35rem 0 0;
+  }
+
+  .swatch-card h3 { margin-bottom: 0; }
+
+  /* ---- wrapping demo */
+
+  .wrap-demo {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    line-height: 2.15;
+    max-width: 38rem;
+  }
+
+  /* ---- docs table */
+
+  table { border-collapse: collapse; width: 100%; max-width: 48rem; font-size: .87rem; }
+  .table-scroll { overflow-x: auto; }
+  th, td { text-align: left; padding: .5rem .8rem .5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; }
+  td:first-child { font-family: var(--mono); font-size: .8rem; }
+  td:nth-child(2) { font-family: var(--mono); font-size: .78rem; color: var(--ink-soft); white-space: nowrap; }
+
+  @media (max-width: 34rem) {
+    td:first-child { font-size: .72rem; overflow-wrap: anywhere; }
+    th, td { padding-right: .5rem; }
+  }
+
+  footer { padding-top: 5rem; font-size: .85rem; color: var(--ink-soft); }
+
+  :focus-visible { outline: 2px solid var(--margin-red); outline-offset: 2px; }
+
+  /* Scoped deliberately. A blanket "* { transition: none }" here would also
+     switch off the stroke reveal, which is the thing the page exists to show,
+     and the library already handles reduced motion itself. */
+  @media (prefers-reduced-motion: reduce) {
+    .shapes button, .swatches button, .btn { transition: none; }
+  }
+
+  .notice {
+    font-size: .8rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    border-left: 2px solid var(--margin-red);
+    padding: .1rem 0 .1rem .6rem;
+    margin: .6rem 0 0;
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="row">
+    <div class="mark">v0.1.0</div>
+    <div class="wordmark">
+      <h1>Scrawl</h1>
+      <span class="ver">4.5&nbsp;KB gzipped · no deps</span>
+    </div>
+
+    <p class="specimen-hero">
+      It draws <span data-scrawl="underline" data-scrawl-color="#2a46b8" data-scrawl-delay="300">wobbly SVG strokes</span>
+      behind your text, one per line box, so
+      <span data-scrawl="scribble" data-scrawl-color="#d2372a" data-scrawl-delay="1100">wrapping just works</span>.
+      Every stroke is <span data-scrawl="marker" data-scrawl-color="#efc627" data-scrawl-delay="2000">seeded from the text itself</span>,
+      so it looks hand drawn but never changes between reloads. Ten shapes,
+      <span data-scrawl="circle" data-scrawl-color="#1f8a5b" data-scrawl-delay="2900">no dependencies</span>,
+      and it respects reduced motion.
+    </p>
+
+    <p class="fine">
+      Built after digging through how Squarespace does its text highlights. Same idea,
+      standalone, MIT. There is also a
+      <a href="css-only.html">no JavaScript version</a> if you only need static strokes.
+    </p>
+  </header>
+
+  <hr>
+
+  <section class="row" id="playground">
+    <div class="mark">try it</div>
+    <h2>Turn the knobs</h2>
+
+    <div class="lab">
+      <div class="controls">
+        <fieldset>
+          <legend><h3>Shape</h3></legend>
+          <div class="shapes" id="shapes"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend><h3>Ink</h3></legend>
+          <div class="swatches" id="swatches">
+            <button type="button" data-color="#2a46b8" style="background:#2a46b8" aria-label="Biro blue" aria-pressed="true"></button>
+            <button type="button" data-color="#d2372a" style="background:#d2372a" aria-label="Proof red" aria-pressed="false"></button>
+            <button type="button" data-color="#efc627" style="background:#efc627" aria-label="Highlighter" aria-pressed="false"></button>
+            <button type="button" data-color="#1f8a5b" style="background:#1f8a5b" aria-label="Felt green" aria-pressed="false"></button>
+            <button type="button" data-color="#4a4e54" style="background:#4a4e54" aria-label="Graphite" aria-pressed="false"></button>
+            <input type="color" id="custom" value="#2a46b8" aria-label="Custom ink">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><h3>Thickness</h3></legend>
+          <div class="slider">
+            <input type="range" id="thickness" min="1" max="9" step="0.5" value="3">
+            <output for="thickness" id="thicknessOut">3px</output>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><h3>Passes</h3></legend>
+          <div class="slider">
+            <input type="range" id="passes" min="1" max="4" step="1" value="2">
+            <output for="passes" id="passesOut">2</output>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><h3>Jitter</h3></legend>
+          <div class="slider">
+            <input type="range" id="jitter" min="0" max="2.5" step="0.1" value="1">
+            <output for="jitter" id="jitterOut">1</output>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><h3>Draw on</h3></legend>
+          <label class="toggle"><input type="checkbox" id="animate" checked> Animate the stroke</label>
+          <div class="slider" style="margin-top:.55rem">
+            <input type="range" id="duration" min="150" max="2000" step="50" value="650">
+            <output for="duration" id="durationOut">650ms</output>
+          </div>
+          <p class="notice" id="rmNotice" hidden>
+            Your system is set to reduce motion, so strokes paint instantly.
+            <label class="toggle" style="margin-top:.35rem">
+              <input type="checkbox" id="rmOverride"> Play it anyway
+            </label>
+          </p>
+        </fieldset>
+
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn" id="reroll">New wobble</button>
+          <button class="btn" id="replay">Replay</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="stage">
+          <p class="specimen">
+            Kept the good bits, threw out <span id="target">the parts that were only there to look busy</span>,
+            and shipped it on a Tuesday.
+          </p>
+        </div>
+
+        <div class="codehead">
+          <h3 style="margin:0">Markup</h3>
+          <button class="btn" id="copy">Copy</button>
+        </div>
+        <pre id="code"></pre>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <section class="row" id="shapes-sheet">
+    <div class="mark">all ten</div>
+    <h2>The shape sheet</h2>
+    <p class="fine">Each one is drawn twice by default, which is what stops it reading as a vector graphic. Scroll them into view to see the reveal.</p>
+    <div class="sheet-grid" id="grid"></div>
+  </section>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">wrapping</div>
+    <h2>Across line breaks</h2>
+    <p class="fine">Strokes are measured per line box, so a run that wraps gets one stroke per line rather than a single stroke stretched across the gap. Resize the window and they redraw.</p>
+    <p class="wrap-demo">
+      The hard part was never the drawing, it was
+      <span data-scrawl="underline" data-scrawl-color="#2a46b8" data-scrawl-thickness="3">working out where the text actually sits once the browser has finished laying it out</span>,
+      because a span that wraps is not one rectangle, it is several, and
+      <span data-scrawl="scribble" data-scrawl-color="#d2372a" data-scrawl-thickness="2.5">the naive approach draws one enormous stroke through the middle of your paragraph</span>
+      which nobody wants.
+    </p>
+  </section>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">install</div>
+    <h2>Use it</h2>
+
+    <p>Drop the script in, add a <code>data-scrawl</code> attribute, done. It self initialises on DOM ready.</p>
+
+<pre>&lt;<span class="tag">script</span> <span class="attr">src</span>=<span class="val">"scrawl.js"</span>&gt;&lt;/<span class="tag">script</span>&gt;
+
+&lt;<span class="tag">p</span>&gt;Kept the good bits, threw out
+  &lt;<span class="tag">span</span> <span class="attr">data-scrawl</span>=<span class="val">"scribble"</span> <span class="attr">data-scrawl-color</span>=<span class="val">"#d2372a"</span>&gt;the busy parts&lt;/<span class="tag">span</span>&gt;.
+&lt;/<span class="tag">p</span>&gt;</pre>
+
+    <p style="margin-top:2rem">Or drive it from script:</p>
+
+<pre>Scrawl.annotate(<span class="val">'#headline'</span>, {
+  type: <span class="val">'circle'</span>,
+  color: <span class="val">'#1f8a5b'</span>,
+  thickness: <span class="val">3</span>,
+  animate: <span class="val">true</span>
+}).show();</pre>
+
+    <h3 style="margin-top:2.6rem">Options</h3>
+    <table>
+      <thead><tr><th>Attribute</th><th>Default</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>data-scrawl</td><td>underline</td><td>Shape name. One of the ten above.</td></tr>
+        <tr><td>data-scrawl-color</td><td>inherited</td><td>Any CSS colour. Falls back to the element's own text colour.</td></tr>
+        <tr><td>data-scrawl-thickness</td><td>0.085em</td><td>Stroke width in px. Scales with font size if you leave it alone.</td></tr>
+        <tr><td>data-scrawl-passes</td><td>2</td><td>How many times the pen goes over the whole figure. 1 is clean, 3 is scratchy.</td></tr>
+        <tr><td>data-scrawl-jitter</td><td>1</td><td>0 is ruler straight. Above 1.5 gets messy quickly.</td></tr>
+        <tr><td>data-scrawl-opacity</td><td>1</td><td>Marker defaults to 0.32 so it does not bury the text.</td></tr>
+        <tr><td>data-scrawl-animate</td><td>true</td><td>Draw on reveal, triggered by IntersectionObserver.</td></tr>
+        <tr><td>data-scrawl-duration</td><td>650</td><td>Milliseconds per stroke.</td></tr>
+        <tr><td>data-scrawl-delay</td><td>0</td><td>Milliseconds before the first stroke. Use it to sequence a paragraph.</td></tr>
+        <tr><td>data-scrawl-direction</td><td>right</td><td>Which end the pen starts from.</td></tr>
+        <tr><td>data-scrawl-seed</td><td>the text</td><td>Change it to get a different wobble for the same words.</td></tr>
+        <tr><td>data-scrawl-front</td><td>false</td><td>true paints over the glyphs instead of behind them.</td></tr>
+        <tr><td>data-scrawl-repeat</td><td>false</td><td>Redraw every time it scrolls back into view.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:2.6rem">Worth knowing</h3>
+    <p class="fine">
+      The SVG is appended to the annotated element's parent at <code>z-index: -1</code>, and the parent
+      gets <code>position: relative</code> if it was static. That keeps everything aligned through scrolling
+      and transforms without any coordinate maths. If the parent has its own background you will want
+      <code>data-scrawl-front="true"</code> instead. Redraws are debounced through a
+      <code>ResizeObserver</code> on the parent plus <code>document.fonts.ready</code>, so a late web font
+      does not leave strokes stranded under the old metrics.
+    </p>
+  </section>
+
+  <footer class="row">
+    <div class="mark">MIT</div>
+    <p>Scrawl. Do what you like with it.</p>
+  </footer>
+
+</div>
+
+<script src="scrawl.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var state = {
+    type: 'underline',
+    color: '#2a46b8',
+    thickness: 3,
+    passes: 2,
+    jitter: 1,
+    animate: true,
+    duration: 650,
+    seed: null,
+    respectReducedMotion: true
+  };
+
+  var target = document.getElementById('target');
+  var inst = null;
+
+  function build(animate) {
+    if (inst) inst.remove();
+    inst = Scrawl.annotate(target, {
+      type: state.type,
+      color: state.color,
+      thickness: state.thickness,
+      passes: state.passes,
+      jitter: state.jitter,
+      animate: state.animate,
+      duration: state.duration,
+      seed: state.seed,
+      respectReducedMotion: state.respectReducedMotion
+    });
+    inst.show(animate !== false);
+    writeCode();
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function writeCode() {
+    var attrs = [['data-scrawl', state.type], ['data-scrawl-color', state.color]];
+    if (state.thickness !== 3) attrs.push(['data-scrawl-thickness', state.thickness]);
+    if (state.passes !== 2) attrs.push(['data-scrawl-passes', state.passes]);
+    if (state.jitter !== 1) attrs.push(['data-scrawl-jitter', state.jitter]);
+    if (!state.animate) attrs.push(['data-scrawl-animate', 'false']);
+    else if (state.duration !== 650) attrs.push(['data-scrawl-duration', state.duration]);
+    if (state.seed != null) attrs.push(['data-scrawl-seed', state.seed]);
+
+    var pad = '\n      ';
+    var html = '&lt;<span class="tag">span</span> ' + attrs.map(function (a, i) {
+      return (i ? pad : '') + '<span class="attr">' + a[0] + '</span>=<span class="val">"' + esc(a[1]) + '"</span>';
+    }).join('') + '&gt;your text&lt;/<span class="tag">span</span>&gt;';
+
+    document.getElementById('code').innerHTML = html;
+  }
+
+  function plainCode() {
+    return document.getElementById('code').textContent;
+  }
+
+  /* shape buttons */
+  var shapeWrap = document.getElementById('shapes');
+  Scrawl.shapes.forEach(function (name) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = name;
+    b.setAttribute('aria-pressed', name === state.type ? 'true' : 'false');
+    b.addEventListener('click', function () {
+      state.type = name;
+      Array.prototype.forEach.call(shapeWrap.children, function (c) {
+        c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+      });
+      build(true);
+    });
+    shapeWrap.appendChild(b);
+  });
+
+  /* ink swatches */
+  var swatchWrap = document.getElementById('swatches');
+  var custom = document.getElementById('custom');
+  Array.prototype.forEach.call(swatchWrap.querySelectorAll('button'), function (b) {
+    b.addEventListener('click', function () {
+      state.color = b.dataset.color;
+      custom.value = b.dataset.color;
+      Array.prototype.forEach.call(swatchWrap.querySelectorAll('button'), function (c) {
+        c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+      });
+      build(true);
+    });
+  });
+  custom.addEventListener('input', function () {
+    state.color = custom.value;
+    Array.prototype.forEach.call(swatchWrap.querySelectorAll('button'), function (c) {
+      c.setAttribute('aria-pressed', 'false');
+    });
+    build(false);
+  });
+
+  /* sliders */
+  function slider(id, key, fmt) {
+    var el = document.getElementById(id);
+    var out = document.getElementById(id + 'Out');
+    out.textContent = fmt(el.value);
+    /* Repaint statically while dragging so it does not strobe, then replay
+       the reveal once the handle is released. */
+    el.addEventListener('input', function () {
+      state[key] = parseFloat(el.value);
+      out.textContent = fmt(el.value);
+      build(false);
+    });
+    el.addEventListener('change', function () { build(true); });
+  }
+  slider('thickness', 'thickness', function (v) { return v + 'px'; });
+  slider('passes', 'passes', function (v) { return v; });
+  slider('jitter', 'jitter', function (v) { return v; });
+  slider('duration', 'duration', function (v) { return v + 'ms'; });
+
+  document.getElementById('animate').addEventListener('change', function () {
+    state.animate = this.checked;
+    build(this.checked);
+  });
+
+  document.getElementById('reroll').addEventListener('click', function () {
+    state.seed = Math.floor(Math.random() * 1e6);
+    build(true);
+  });
+
+  document.getElementById('replay').addEventListener('click', function () { build(true); });
+
+  /* Surface reduced motion rather than silently doing nothing, which just
+     looks like the animation is broken. */
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  var notice = document.getElementById('rmNotice');
+  var override = document.getElementById('rmOverride');
+  function syncReduced() {
+    notice.hidden = !(reduced && reduced.matches);
+    if (notice.hidden) { override.checked = false; state.respectReducedMotion = true; }
+  }
+  if (reduced) {
+    syncReduced();
+    if (reduced.addEventListener) reduced.addEventListener('change', function () { syncReduced(); build(false); });
+  }
+  override.addEventListener('change', function () {
+    state.respectReducedMotion = !this.checked;
+    build(true);
+  });
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var btn = this;
+    var text = plainCode();
+    var done = function () {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy'; }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { btn.textContent = 'Select it manually'; });
+    } else {
+      done();
+    }
+  });
+
+  /* the shape sheet */
+  var PHRASES = {
+    underline: 'read this bit twice',
+    curve: 'one confident sweep',
+    double: 'set this in italics',
+    scribble: 'not quite sure yet',
+    strike: 'cut on second pass',
+    marker: 'the important sentence',
+    box: 'check these figures',
+    circle: 'come back to this',
+    bracket: 'move to page four',
+    cross: 'delete the whole lot'
+  };
+  var INKS = {
+    underline: '#2a46b8', curve: '#d2372a', double: '#4a4e54', scribble: '#1f8a5b',
+    strike: '#d2372a', marker: '#efc627', box: '#d2372a', circle: '#2a46b8',
+    bracket: '#1f8a5b', cross: '#4a4e54'
+  };
+
+  var grid = document.getElementById('grid');
+  Scrawl.shapes.forEach(function (name, i) {
+    var card = document.createElement('div');
+    card.className = 'swatch-card';
+    var ink = INKS[name];
+    card.innerHTML = '<h3>' + name + '</h3><p><span data-scrawl="' + name +
+      '" data-scrawl-color="' + ink + '" data-scrawl-thickness="2.8">' +
+      PHRASES[name] + '</span></p>';
+    grid.appendChild(card);
+  });
+
+  /* everything with data-scrawl gets picked up here, including the cards
+     we just built and the marked up prose in the hero */
+  Scrawl.init();
+  build(true);
+})();
+</script>
+</body>
+</html>

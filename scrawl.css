@@ -1,0 +1,159 @@
+/*!
+ * Scrawl CSS v0.1.0
+ * Hand drawn annotation strokes with no JavaScript at all.
+ * MIT licence.
+ *
+ * The stroke is a background image, so it repaints per line box for free and
+ * wrapped text needs no measuring. Pick a shape class, then an ink class:
+ *
+ *   <span class="scrawl scrawl--scribble scrawl--red">like this</span>
+ *
+ * Ink has to be baked into the SVG because a data URI cannot read a CSS
+ * variable, hence the ink classes. To add your own, see the note at the
+ * bottom of this file. If you want per element wobble, a draw on animation
+ * or arbitrary runtime colours, use scrawl.js instead.
+ */
+
+.scrawl {
+  --scrawl-tile: 5.5em;    /* how often the wobble repeats */
+  --scrawl-height: 0.34em; /* how tall the stroke band is */
+  --scrawl-drop: 0em;      /* nudge the stroke further below the baseline */
+
+  background-repeat: repeat-x;
+  background-size: var(--scrawl-tile) var(--scrawl-height);
+  background-position: 0 calc(100% - var(--scrawl-drop));
+  padding-bottom: 0.16em;
+
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+
+/* A single wavering rule, the workhorse. */
+.scrawl--underline {
+  --scrawl-tile: 5.5em;
+  --scrawl-height: 0.34em;
+}
+
+/* Two rules, the proofreader's mark for setting something in italics. */
+.scrawl--double {
+  --scrawl-tile: 5.5em;
+  --scrawl-height: 0.42em;
+}
+
+/* Zigzag. Drop --scrawl-tile for a tighter, more frantic scribble. */
+.scrawl--scribble {
+  --scrawl-tile: 4em;
+  --scrawl-height: 0.38em;
+}
+
+/* Struck through the middle rather than underlined. */
+.scrawl--strike {
+  padding-bottom: 0;
+  background-position: 0 54%;
+}
+
+/* One long sweep that stretches to fit rather than tiling, so keep it on runs that will not wrap. */
+.scrawl--curve {
+  --scrawl-height: 0.5em;
+  background-repeat: no-repeat;
+  background-size: 100% var(--scrawl-height);
+}
+
+/* Highlighter, baked at 42% opacity so it does not bury the text. */
+.scrawl--marker {
+  --scrawl-tile: 7em;
+  padding: 0.08em 0.26em;
+  margin: 0 -0.26em;
+  background-size: var(--scrawl-tile) 100%;
+  background-position: 0 0;
+}
+
+/* Uses border-image, so the corners hold their shape while the edges stretch. */
+.scrawl--box {
+  background: none;
+  padding: 0.2em 0.45em;
+  margin: 0 -0.45em;
+  border: 0.26em solid transparent;
+  border-image-slice: 20;
+  border-image-width: 0.4em;
+  border-image-outset: 0.2em;
+  border-image-repeat: stretch;
+}
+
+/* ---------------------------------------------------------------- inks */
+
+.scrawl--underline { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%2315171b' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--underline.scrawl--blue { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%232a46b8' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--underline.scrawl--red { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%23d2372a' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--underline.scrawl--yellow { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%23efc627' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--underline.scrawl--green { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%231f8a5b' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--underline.scrawl--lead { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%234a4e54' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--underline.scrawl--paper { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+
+.scrawl--double { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%2315171b' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%2315171b' stroke-width='1.6'/></svg>"); }
+.scrawl--double.scrawl--blue { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%232a46b8' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%232a46b8' stroke-width='1.6'/></svg>"); }
+.scrawl--double.scrawl--red { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%23d2372a' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%23d2372a' stroke-width='1.6'/></svg>"); }
+.scrawl--double.scrawl--yellow { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%23efc627' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%23efc627' stroke-width='1.6'/></svg>"); }
+.scrawl--double.scrawl--green { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%231f8a5b' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%231f8a5b' stroke-width='1.6'/></svg>"); }
+.scrawl--double.scrawl--lead { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%234a4e54' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%234a4e54' stroke-width='1.6'/></svg>"); }
+.scrawl--double.scrawl--paper { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 4.4 C20 2.6 40 6 60 4 S100 2.6 120 4.4' fill='none' stroke='%23ffffff' stroke-width='1.9'/><path d='M0 9.8 C20 8.4 40 11.4 60 9.6 S100 8.2 120 9.8' fill='none' stroke='%23ffffff' stroke-width='1.6'/></svg>"); }
+
+.scrawl--scribble { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%2315171b' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+.scrawl--scribble.scrawl--blue { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%232a46b8' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+.scrawl--scribble.scrawl--red { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%23d2372a' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+.scrawl--scribble.scrawl--yellow { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%23efc627' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+.scrawl--scribble.scrawl--green { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%231f8a5b' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+.scrawl--scribble.scrawl--lead { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%234a4e54' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+.scrawl--scribble.scrawl--paper { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 Q7.5 1.4 15 6 T30 6 T45 6 T60 6 T75 6 T90 6 T105 6 T120 6' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round'/></svg>"); }
+
+.scrawl--strike { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%2315171b' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--strike.scrawl--blue { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%232a46b8' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--strike.scrawl--red { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%23d2372a' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--strike.scrawl--yellow { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%23efc627' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--strike.scrawl--green { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%231f8a5b' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--strike.scrawl--lead { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%234a4e54' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+.scrawl--strike.scrawl--paper { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'><path d='M0 6 C24 4.2 48 8 72 5.8 S104 4.4 120 6' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round'/></svg>"); }
+
+.scrawl--curve { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%2315171b' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+.scrawl--curve.scrawl--blue { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%232a46b8' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+.scrawl--curve.scrawl--red { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%23d2372a' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+.scrawl--curve.scrawl--yellow { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%23efc627' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+.scrawl--curve.scrawl--green { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%231f8a5b' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+.scrawl--curve.scrawl--lead { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%234a4e54' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+.scrawl--curve.scrawl--paper { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'><path d='M2 4.5 C46 15.5 152 16.5 198 6' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round'/></svg>"); }
+
+.scrawl--marker { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%2315171b' fill-opacity='0.42'/></svg>"); }
+.scrawl--marker.scrawl--blue { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%232a46b8' fill-opacity='0.42'/></svg>"); }
+.scrawl--marker.scrawl--red { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%23d2372a' fill-opacity='0.42'/></svg>"); }
+.scrawl--marker.scrawl--yellow { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%23efc627' fill-opacity='0.42'/></svg>"); }
+.scrawl--marker.scrawl--green { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%231f8a5b' fill-opacity='0.42'/></svg>"); }
+.scrawl--marker.scrawl--lead { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%234a4e54' fill-opacity='0.42'/></svg>"); }
+.scrawl--marker.scrawl--paper { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'><path d='M0 4 C20 1.5 40 6 60 3.2 C80 0.6 100 5 120 4 L120 36 C100 38.4 80 34 60 36.8 C40 39.4 20 35 0 36 Z' fill='%23ffffff' fill-opacity='0.42'/></svg>"); }
+
+.scrawl--box { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%2315171b' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+.scrawl--box.scrawl--blue { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%232a46b8' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+.scrawl--box.scrawl--red { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%23d2372a' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+.scrawl--box.scrawl--yellow { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%23efc627' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+.scrawl--box.scrawl--green { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%231f8a5b' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+.scrawl--box.scrawl--lead { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%234a4e54' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+.scrawl--box.scrawl--paper { border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60'><path d='M9 8.5 C26 6.4 62 7.2 81.5 8.2 C83.4 18 83.8 42 81.8 51.5 C61 53.6 27 53 8.6 51.6 C6.6 41 6.8 18.6 8.8 8.2 C13 6.8 20 6.6 27 6.9' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
+
+/* ------------------------------------------------------------- utilities */
+
+.scrawl--thin  { --scrawl-height: 0.24em; }
+.scrawl--thick { --scrawl-height: 0.5em; }
+.scrawl--tight { --scrawl-tile: 3em; }
+.scrawl--loose { --scrawl-tile: 9em; }
+.scrawl--low   { --scrawl-drop: -0.08em; }
+
+/* --------------------------------------------------------- your own ink */
+/*
+   Copy any rule from the ink block above and swap the two hex values, one in
+   the stroke attribute and, for the marker, one in fill. Remember that # is
+   written %23 inside a data URI:
+
+     .scrawl--underline.scrawl--hot {
+       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M0 8 C13 5 27 9.6 40 7.4 S67 5 80 8 S107 10.2 120 8' fill='none' stroke='%23ff5722' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+     }
+*/
