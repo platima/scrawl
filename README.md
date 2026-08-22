@@ -1,4 +1,4 @@
-<img align="right" src="https://visitor-badge.laobi.icu/badge?page_id=platima.scrawl" height="20" />
+<img align="right" alt="visitors" src="https://visitor-badge.laobi.icu/badge?page_id=platima.scrawl" height="20" />
 
 # Scrawl 〰️
 
