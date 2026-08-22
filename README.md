@@ -1,4 +1,6 @@
-# Scrawl
+<img align="right" src="https://visitor-badge.laobi.icu/badge?page_id=platima.scrawl" height="20" />
+
+# Scrawl 〰️
 
 Hand drawn annotation strokes for HTML text. Underlines, scribbles, circles, highlighter marks: the wobbly pen-on-paper marks you see on a lot of marketing sites, without the site builder attached.
 
