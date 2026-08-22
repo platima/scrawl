@@ -2,9 +2,11 @@
 
 # Scrawl 〰️
 
+Hand drawn annotation strokes for HTML text. Underlines, scribbles, circles, highlighter marks: the wobbly pen-on-paper marks you see on a lot of marketing sites, without the site builder attached.
+
 **[Live demo →](https://platima.github.io/scrawl/)**
 
-Hand drawn annotation strokes for HTML text. Underlines, scribbles, circles, highlighter marks: the wobbly pen-on-paper marks you see on a lot of marketing sites, without the site builder attached.
+![Strokes drawing themselves in over a paragraph](screenshots/reveal.gif)
 
 Two builds, pick one:
 
@@ -37,6 +39,12 @@ run `node build.js`, which inlines everything into `index.standalone.html` and
 
 That is it. It self initialises on DOM ready, scans for `[data-scrawl]`, and reveals each stroke when it scrolls into view.
 
+No build step, no install. If you would rather not vendor the file, jsDelivr will serve it straight off this repo. Pin a tag rather than `main` so an update cannot change under you:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/platima/scrawl@v0.1.0/scrawl.min.js"></script>
+```
+
 Programmatic if you prefer:
 
 ```js
@@ -52,7 +60,11 @@ Scrawl.annotate('#headline', {
 
 `underline` · `curve` · `double` · `scribble` · `strike` · `marker` · `box` · `circle` · `bracket` · `cross`
 
+![The ten shapes, each drawn over a short phrase](screenshots/shapes.png)
+
 The first six draw one stroke per line box, so wrapped runs get a mark on every line. The last four use the union bounding box, because a circle around every line is not what anyone means.
+
+![An underline and a scribble each wrapping onto a second line, with a separate stroke per line](screenshots/wrapping.png)
 
 ### Options
 
@@ -149,7 +161,13 @@ scrawl.css      the no-JS stylesheet
 index.html      JS demo and playground
 css-only.html   stylesheet demo
 build.js        inlines the above into single file demos
+screenshots/    README images
 ```
+
+`scrawl.min.js` is committed so it can be CDN linked. The `*.standalone.html`
+files are gitignored, since they are generated and would go stale the moment
+you forgot to rebuild them. Run `node build.js` when you want them, or grab
+them from a release.
 
 ## Licence
 

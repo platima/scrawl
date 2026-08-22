@@ -724,8 +724,16 @@ function passAlpha(p) { return p === 0 ? 1 : Math.max(0.38, 1 - p * 0.3); }
 
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', refreshAll);
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(refreshAll).catch(function () {});
+    if (document.fonts) {
+      if (document.fonts.ready) document.fonts.ready.then(refreshAll).catch(function () {});
+      /* ready is a one shot: it settles as soon as the fonts needed at that
+         instant have loaded, which on a page that has not painted any text yet
+         is immediately. A font arriving after that would leave every stroke
+         measured against the fallback metrics and visibly out of register, so
+         listen for later batches as well. */
+      if (document.fonts.addEventListener) {
+        document.fonts.addEventListener('loadingdone', refreshAll);
+      }
     }
     if (!window.SCRAWL_NO_AUTOINIT) {
       if (document.readyState === 'loading') {
