@@ -46,7 +46,7 @@ That is it. It self initialises on DOM ready, scans for `[data-scrawl]`, and rev
 No build step, no install. If you would rather not vendor the file, jsDelivr will serve it straight off this repo. Pin a tag rather than `main` so an update cannot change under you:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/platima/scrawl@v0.1.0/scrawl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/platima/scrawl@v0.2.0/scrawl.min.js"></script>
 ```
 
 Programmatic if you prefer:
@@ -64,13 +64,15 @@ Scrawl.annotate('#headline', {
 
 `underline` · `curve` · `double` · `scribble` · `strike` · `marker` · `box` · `circle` · `bracket` · `cross` · `swoosh`
 
-![Ten of the shapes, each drawn over a short phrase](screenshots/shapes.png)
+![The eleven shapes, each drawn over a short phrase](screenshots/shapes.png)
 
 `underline`, `curve`, `double`, `scribble`, `strike`, `marker` and `swoosh` draw one stroke per line box, so wrapped runs get a mark on every line. `box`, `circle`, `bracket` and `cross` use the union bounding box, because a circle around every line is not what anyone means.
 
 `swoosh` is a single tapered mark under the text, full weight in the middle and thinning to a point at each end, with no wobble. It suits display type, where the pen shapes get scaled up until they look scratchy. `jitter` sets its tilt in degrees and `passes` is ignored.
 
 ### Arrows
+
+![Arrows joining three cards, and a sticky note whose curl points at a line of code](screenshots/arrows.png)
 
 ```html
 <div id="browser" data-scrawl="arrow" data-scrawl-to="#server">Browser</div>

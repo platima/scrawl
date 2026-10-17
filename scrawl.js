@@ -1,5 +1,5 @@
 /*!
- * Scrawl v0.1.0
+ * Scrawl v0.2.0
  * Hand drawn annotation strokes for HTML text. No dependencies.
  * Draws seeded, slightly wonky SVG paths behind (or over) inline text,
  * one stroke per line box, and arrows from one element to another, with
@@ -1264,7 +1264,7 @@
   }
 
   var api = {
-    version: '0.1.0',
+    version: '0.2.0',
     shapes: SHAPES,
     defaults: DEFAULTS,
     annotate: annotate,
