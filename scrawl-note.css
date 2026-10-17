@@ -1,0 +1,49 @@
+/*!
+ * Scrawl notes v0.1.0
+ * A sticky note with a strip of tape across the top, for a handwritten
+ * aside. Pairs with the curl in scrawl.js and works without it. No
+ * dependencies. MIT licence.
+ */
+
+/* The element is the paper, so an arrow pointed at it or from it measures
+   the note you can see rather than just the words on it. It shrinks to its
+   text, so position and width are left to you. */
+.scrawl-note {
+  --scrawl-note: #f3b01c;
+  --scrawl-tape: rgb(255 255 255 / 35%);
+  --scrawl-tilt: -4deg;
+  position: relative;
+  width: -moz-fit-content;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: .45em .75em .4em;
+  border: 1px solid color-mix(in srgb, var(--scrawl-note) 40%, transparent);
+  /* One corner rounder than the rest, where the paper has started to lift. */
+  border-radius: 3px 3px 9px 3px;
+  /* Translucent, so the same note reads as paper on a light page and on a
+     dark one. */
+  background: linear-gradient(170deg,
+    color-mix(in srgb, var(--scrawl-note) 20%, transparent),
+    color-mix(in srgb, var(--scrawl-note) 9%, transparent));
+  box-shadow: 0 3px 9px rgb(0 0 0 / 22%);
+  transform: rotate(var(--scrawl-tilt));
+}
+
+.scrawl-note::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -.32em;
+  width: 2.2em;
+  height: .62em;
+  transform: translateX(-50%) rotate(-3deg);
+  background: var(--scrawl-tape);
+  /* The edge is what shows on a light page, where the strip itself is
+     barely lighter than the paper. */
+  border: 1px solid rgb(128 128 128 / 22%);
+  pointer-events: none;
+}
+
+/* Straight, for a note that has to line up with something. */
+.scrawl-note--level { --scrawl-tilt: 0deg; }

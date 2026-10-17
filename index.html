@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scrawl: hand drawn annotations for HTML text</title>
-<meta name="description" content="A dependency free library that draws wobbly SVG strokes behind your text. Underlines, scribbles, circles, highlighter marks.">
+<meta name="description" content="A dependency free library that draws wobbly SVG strokes behind your text. Underlines, scribbles, circles, highlighter marks, and arrows from one element to another.">
 <link rel="canonical" href="https://platima.github.io/scrawl/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://platima.github.io/scrawl/">
 <meta property="og:title" content="Scrawl: hand drawn annotations for HTML text">
-<meta property="og:description" content="Wobbly SVG strokes behind your text. Ten shapes, no dependencies, 5.2 KB gzipped.">
+<meta property="og:description" content="Wobbly SVG strokes behind your text, and arrows between things. Eleven shapes, no dependencies, 7.9 KB gzipped.">
 <meta property="og:image" content="https://platima.github.io/scrawl/screenshots/shapes.png">
 <meta name="twitter:card" content="summary_large_image">
 <!-- The wordmark's own underline, so the tab needs no extra request. -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M4 21 C10 17.5 15 24 21 19.5 S27 18 29 21' fill='none' stroke='%232a46b8' stroke-width='4' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="scrawl-note.css">
 <style>
   :root {
     --paper:      #e4e3db;
@@ -313,6 +314,62 @@
     max-width: 38rem;
   }
 
+  /* ---- arrows */
+
+  .flow {
+    display: flex;
+    gap: 4.5rem;
+    align-items: flex-start;
+    margin: 2rem 0 1.4rem;
+  }
+  /* Stacked is the phone layout, and the button forces it on a wide screen
+     so you can watch the arrows reroute. */
+  .flow.stacked { flex-direction: column; align-items: flex-start; gap: 3.2rem; }
+  @media (max-width: 40rem) {
+    .flow { flex-direction: column; gap: 3.2rem; }
+  }
+
+  .card {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+    max-width: 14rem;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .flow.stacked .card { flex: none; }
+  .card:nth-child(2) { margin-top: 2.2rem; }
+  .flow.stacked .card:nth-child(2) { margin: 0 0 0 4rem; }
+  @media (max-width: 40rem) {
+    .card { flex: none; }
+    .card:nth-child(2) { margin: 0 0 0 3rem; }
+  }
+  .card h3 {
+    margin: 0;
+    padding: .55rem .8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .card p { margin: 0; padding: .7rem .8rem; font-size: .88rem; }
+
+  .margin-demo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5rem;
+    align-items: center;
+    margin-top: 1.4rem;
+  }
+  .margin-demo pre { margin: 0; }
+  .scrawl-note {
+    font: 600 1.45rem/1.05 "Caveat", cursive;
+    color: var(--pen-red);
+  }
+  @media (max-width: 40rem) {
+    .margin-demo { grid-template-columns: minmax(0, 1fr); gap: 4rem; }
+    .margin-demo .scrawl-note { order: -1; justify-self: end; margin-right: 1rem; }
+  }
+
   /* ---- docs table */
 
   table { border-collapse: collapse; width: 100%; max-width: 48rem; font-size: .87rem; }
@@ -355,7 +412,7 @@
     <div class="mark">v0.1.0</div>
     <div class="wordmark">
       <h1>Scrawl</h1>
-      <span class="ver">5.2&nbsp;KB gzipped · no deps</span>
+      <span class="ver">7.9&nbsp;KB gzipped · no deps</span>
     </div>
 
     <p class="specimen-hero">
@@ -363,7 +420,7 @@
       behind your text, one per line box, so
       <span data-scrawl="scribble" data-scrawl-color="#d2372a" data-scrawl-delay="1100">wrapping just works</span>.
       Every stroke is <span data-scrawl="marker" data-scrawl-color="#efc627" data-scrawl-delay="2000">seeded from the text itself</span>,
-      so it looks hand drawn but never changes between reloads. Ten shapes,
+      so it looks hand drawn but never changes between reloads. Eleven shapes, arrows,
       <span data-scrawl="circle" data-scrawl-color="#1f8a5b" data-scrawl-delay="2900">no dependencies</span>,
       and it respects reduced motion.
     </p>
@@ -467,7 +524,7 @@
   <hr>
 
   <section class="row" id="shapes-sheet">
-    <div class="mark">all ten</div>
+    <div class="mark">all eleven</div>
     <h2>The shape sheet</h2>
     <p class="fine">Each one is drawn twice by default, which stops it reading as a vector graphic. Scroll them into view to see the reveal.</p>
     <div class="sheet-grid" id="grid"></div>
@@ -486,6 +543,61 @@
       <span data-scrawl="scribble" data-scrawl-color="#d2372a" data-scrawl-thickness="2.5">the naive approach draws one enormous stroke through the middle of your paragraph</span>
       which nobody wants.
     </p>
+  </section>
+
+  <hr>
+
+  <section class="row" id="arrows">
+    <div class="mark">arrows</div>
+    <h2>From here to there</h2>
+    <p class="fine">
+      Point an <code>arrow</code> at another element with <code>data-scrawl-to</code> and it leaves the
+      middle of one facing side and lands square on the other. Side by side it runs across, stacked it runs
+      down, and it redraws when the layout changes. Stack these and watch.
+    </p>
+
+    <div class="flow" id="flow">
+      <div class="card" id="flow-browser" data-scrawl="arrow" data-scrawl-to="#flow-server"
+           data-scrawl-color="#2a46b8" data-scrawl-thickness="2">
+        <h3>browser</h3>
+        <p>Sends the order</p>
+      </div>
+      <div class="card" id="flow-server" data-scrawl="arrow" data-scrawl-to="#flow-db"
+           data-scrawl-color="#2a46b8" data-scrawl-thickness="2" data-scrawl-delay="700">
+        <h3>server</h3>
+        <p>Checks the stock</p>
+      </div>
+      <div class="card" id="flow-db">
+        <h3>db.json</h3>
+        <p>Writes it down</p>
+      </div>
+    </div>
+    <button class="btn" id="flow-flip" aria-pressed="false">Stack them</button>
+
+<pre>&lt;<span class="tag">div</span> <span class="attr">id</span>=<span class="val">"browser"</span> <span class="attr">data-scrawl</span>=<span class="val">"arrow"</span> <span class="attr">data-scrawl-to</span>=<span class="val">"#server"</span>&gt;…&lt;/<span class="tag">div</span>&gt;
+&lt;<span class="tag">div</span> <span class="attr">id</span>=<span class="val">"server"</span> <span class="attr">data-scrawl</span>=<span class="val">"arrow"</span> <span class="attr">data-scrawl-to</span>=<span class="val">"#db"</span>&gt;…&lt;/<span class="tag">div</span>&gt;
+&lt;<span class="tag">div</span> <span class="attr">id</span>=<span class="val">"db"</span>&gt;…&lt;/<span class="tag">div</span>&gt;</pre>
+
+    <h3 style="margin-top:3rem">Notes in the margin</h3>
+    <p class="fine">
+      A <code>curl</code> is an arrow with a loop in it just after it sets off, for an aside rather than a
+      diagram. The sticky note is plain CSS, the <code>.scrawl-note</code> class from
+      <code>scrawl-note.css</code>, and the curl takes its colour from the note's text.
+    </p>
+
+    <div class="margin-demo">
+<pre><code>const receipt = <span id="slow-call">await charge(cart);</span>
+await email(receipt);
+markPaid(cart);
+return receipt;</code></pre>
+      <p class="scrawl-note" data-scrawl="curl" data-scrawl-to="#slow-call">Nothing else<br>happens until<br>this comes back</p>
+    </div>
+
+<pre style="margin-top:2rem">&lt;<span class="tag">link</span> <span class="attr">rel</span>=<span class="val">"stylesheet"</span> <span class="attr">href</span>=<span class="val">"scrawl-note.css"</span>&gt;
+
+&lt;<span class="tag">p</span> <span class="attr">class</span>=<span class="val">"scrawl-note"</span> <span class="attr">data-scrawl</span>=<span class="val">"curl"</span> <span class="attr">data-scrawl-to</span>=<span class="val">"#slow-call"</span>&gt;
+  Nothing else happens until this comes back
+&lt;/<span class="tag">p</span>&gt;</pre>
   </section>
 
   <hr>
@@ -516,7 +628,7 @@
     <table>
       <thead><tr><th>Attribute</th><th>Default</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td>data-scrawl</td><td>underline</td><td>Shape name. One of the ten above.</td></tr>
+        <tr><td>data-scrawl</td><td>underline</td><td>Shape name. One of the eleven above, or arrow or curl.</td></tr>
         <tr><td>data-scrawl-color</td><td>inherited</td><td>Any CSS colour. Falls back to the element's own text colour.</td></tr>
         <tr><td>data-scrawl-thickness</td><td>font-size × 0.085, min 1.4px</td><td>Stroke width in px, written as a plain number. Scales with font size if you leave it alone.</td></tr>
         <tr><td>data-scrawl-passes</td><td>2</td><td>How many times the pen goes over the whole figure. 1 is clean, 3 is scratchy.</td></tr>
@@ -526,12 +638,16 @@
         <tr><td>data-scrawl-duration</td><td>650</td><td>Milliseconds per stroke.</td></tr>
         <tr><td>data-scrawl-delay</td><td>0</td><td>Milliseconds before the first stroke. Use it to sequence a paragraph.</td></tr>
         <tr><td>data-scrawl-stagger</td><td>0.35</td><td>Gap between strokes, as a fraction of duration.</td></tr>
-        <tr><td>data-scrawl-direction</td><td>right</td><td>Which end the pen starts from.</td></tr>
+        <tr><td>data-scrawl-direction</td><td>right</td><td>Which end the pen starts from. Arrows always start from their own element.</td></tr>
         <tr><td>data-scrawl-seed</td><td>the text</td><td>Change it to get a different wobble for the same words.</td></tr>
-        <tr><td>data-scrawl-front</td><td>false</td><td>true paints over the glyphs instead of behind them.</td></tr>
+        <tr><td>data-scrawl-front</td><td>false, true for arrows</td><td>true paints over the glyphs instead of behind them.</td></tr>
         <tr><td>data-scrawl-repeat</td><td>false</td><td>Redraw every time it scrolls back into view.</td></tr>
         <tr><td>data-scrawl-threshold</td><td>0.2</td><td>How much of the element has to be visible before it draws.</td></tr>
         <tr><td>data-scrawl-respect-reduced-motion</td><td>true</td><td>false draws even when the OS asks for reduced motion.</td></tr>
+        <tr><td>data-scrawl-to</td><td>none</td><td>Arrows only. A selector for the element to point at.</td></tr>
+        <tr><td>data-scrawl-head</td><td>end</td><td>Arrows only. end, start, both or none.</td></tr>
+        <tr><td>data-scrawl-gap</td><td>thickness × 2.5, min 4px</td><td>Arrows only. Px left clear between each end and its element.</td></tr>
+        <tr><td>data-scrawl-within</td><td>shared ancestor</td><td>Arrows only. A selector for the element the SVG goes in.</td></tr>
       </tbody>
     </table>
     </div>
@@ -547,12 +663,20 @@
       <code>ResizeObserver</code> on the parent plus <code>document.fonts.ready</code>, so a late web font
       does not leave strokes stranded under the old metrics.
     </p>
+    <p class="fine">
+      An arrow's SVG goes in the nearest ancestor holding both ends instead, and it also redraws when
+      either end changes size. If that ancestor is something big, like <code>&lt;body&gt;</code>, making it
+      relative can move anything absolutely positioned against an element further up, so name a closer one
+      with <code>data-scrawl-within</code>.
+    </p>
   </section>
 
   <footer class="row">
     <div class="mark">MIT</div>
     <p>
       Scrawl, by <a href="https://github.com/platima">Platima</a>. Do what you like with it.
+      Arrows, curls and sticky notes after <a href="https://github.com/mikecann">Mike Cann</a>'s designs
+      for <a href="https://explained.convex.dev/build-your-own-convex/">Build Your Own Convex</a>.
       <a href="https://github.com/platima/scrawl">Source</a> ·
       <a href="https://github.com/platima/scrawl/blob/main/LICENSE">Licence</a> ·
       <a href="css-only.html">CSS-only build</a>
@@ -707,6 +831,14 @@
 
   document.getElementById('replay').addEventListener('click', function () { build(true); });
 
+  /* The arrows redraw themselves when the flow box changes size, so all
+     the button has to do is change the layout. */
+  document.getElementById('flow-flip').addEventListener('click', function () {
+    var stacked = document.getElementById('flow').classList.toggle('stacked');
+    this.setAttribute('aria-pressed', stacked ? 'true' : 'false');
+    this.textContent = stacked ? 'Side by side' : 'Stack them';
+  });
+
   /* Surface reduced motion rather than silently doing nothing, which just
      looks like the animation is broken. */
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -765,12 +897,13 @@
     box: 'check these figures',
     circle: 'come back to this',
     bracket: 'move to page four',
-    cross: 'delete the whole lot'
+    cross: 'delete the whole lot',
+    swoosh: 'signed off with a flourish'
   };
   var INKS = {
     underline: '#2a46b8', curve: '#d2372a', double: '#4a4e54', scribble: '#1f8a5b',
     strike: '#d2372a', marker: '#efc627', box: '#d2372a', circle: '#2a46b8',
-    bracket: '#1f8a5b', cross: '#4a4e54'
+    bracket: '#1f8a5b', cross: '#4a4e54', swoosh: '#2a46b8'
   };
 
   var grid = document.getElementById('grid');

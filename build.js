@@ -2,8 +2,8 @@
  * Builds everything that is generated rather than written:
  *
  *   scrawl.min.js             minified library, the file CDN links point at
- *   index.standalone.html     JS demo with scrawl.js inlined
- *   css-only.standalone.html  CSS demo with scrawl.css inlined
+ *   index.standalone.html     JS demo with scrawl.js and scrawl-note.css inlined
+ *   css-only.standalone.html  CSS demo with scrawl.css and scrawl-note.css inlined
  *
  *   node build.js
  *
@@ -72,14 +72,19 @@ const rebuilt = minify();
 
 const js = read('scrawl.js');
 const css = read('scrawl.css');
+const noteLink = '<link rel="stylesheet" href="scrawl-note.css">';
+const noteStyle = '<style>\n' + read('scrawl-note.css') + '\n</style>';
 
 let index = read('index.html');
 index = swap(index, '<script src="scrawl.js"></script>', '<script>\n' + js + '\n</script>', 'index.html');
+index = swap(index, noteLink, noteStyle, 'index.html');
 index = swap(index, 'href="css-only.html"', 'href="css-only.standalone.html"', 'index.html');
 
 let cssOnly = read('css-only.html');
 cssOnly = swap(cssOnly, '<link rel="stylesheet" href="scrawl.css">', '<style>\n' + css + '\n</style>', 'css-only.html');
-cssOnly = swap(cssOnly, 'href="index.html"', 'href="index.standalone.html"', 'css-only.html');
+cssOnly = swap(cssOnly, noteLink, noteStyle, 'css-only.html');
+/* No closing quote, so a link to a section of the page, #arrows, swaps too. */
+cssOnly = swap(cssOnly, 'href="index.html', 'href="index.standalone.html', 'css-only.html');
 
 const banner = '<!-- Built by build.js. Edit index.html / css-only.html, not this file. -->\n';
 
@@ -98,6 +103,7 @@ function report(f) {
 console.log('');
 if (rebuilt) report('scrawl.min.js');
 report('scrawl.css');
+report('scrawl-note.css');
 report('index.standalone.html');
 report('css-only.standalone.html');
 console.log('\nThe two figures for scrawl.min.js are the ones quoted in README.md and');

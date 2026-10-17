@@ -15,8 +15,9 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M4 21 C10 17.5 15 24 21 19.5 S27 18 29 21' fill='none' stroke='%232a46b8' stroke-width='4' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Caveat:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="scrawl.css">
+<link rel="stylesheet" href="scrawl-note.css">
 <style>
   :root {
     --paper: #e4e3db; --paper-deep: #d7d5ca; --ink: #15171b;
@@ -69,6 +70,7 @@
        color: var(--ink-soft); font-weight: 500; }
   td:first-child { font-family: var(--mono); font-size: .8rem; white-space: nowrap; }
   footer { padding-top: 4.5rem; font-size: .85rem; color: var(--ink-soft); }
+  .scrawl-note { font: 600 1.45rem/1.05 "Caveat", cursive; color: #d2372a; margin: 2.2rem 0 1.6rem 1rem; }
   :focus-visible { outline: 2px solid var(--margin-red); outline-offset: 2px; }
   @media (max-width: 60rem) {
     :root { --gutter: 0rem; }
@@ -175,6 +177,24 @@
       <code>box-decoration-break: clone</code> makes each line fragment take its own copy rather than
       one background stretched across the lot.
     </p>
+  </section>
+
+  <hr>
+
+  <section class="row">
+    <div class="mark">notes</div>
+    <h2>Sticky notes</h2>
+    <p class="scrawl-note">Check this with<br>legal before it ships</p>
+    <p class="fine">
+      <code>scrawl-note.css</code> is its own small stylesheet, so a note needs no script and no
+      <code>scrawl.css</code>. Set <code>--scrawl-note</code> for the paper's colour and
+      <code>--scrawl-tilt</code> for how crooked it is stuck on. The handwriting is yours to bring; this page
+      uses Caveat. With <a href="index.html#arrows">the JS build</a>, a curl can point from the note at
+      whatever it is about.
+    </p>
+<pre>&lt;link rel="stylesheet" href="scrawl-note.css"&gt;
+
+&lt;p class="scrawl-note"&gt;Check this with legal before it ships&lt;/p&gt;</pre>
   </section>
 
   <footer class="row">
